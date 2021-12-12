@@ -3,12 +3,16 @@ package com.example.myfirstcomposeapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusModifier
@@ -33,7 +37,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun MyApp( ) {
-    var shouldShowOnboarding by remember{ mutableStateOf(true)}
+    var shouldShowOnboarding by rememberSaveable{ mutableStateOf(true)}
     if (shouldShowOnboarding){
         OnboadrdingScreen(onContinueClicked = {shouldShowOnboarding = false})
     } else{
@@ -54,7 +58,12 @@ private  fun Greetings (names : List<String> = List(1000){"$it"}){
 @Composable
 fun Greeting(name: String) {
     val expanded = remember{ mutableStateOf(false)}
-    val extraPadding = if(expanded.value) 48.dp else 0.dp
+    val extraPadding by  animateDpAsState(if(expanded.value) 48.dp else 0.dp,
+    animationSpec = spring(
+        dampingRatio = Spring.DampingRatioMediumBouncy,
+        stiffness = Spring.StiffnessLow
+    ))
+
     Surface(color = MaterialTheme.colors.primary,
             modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
     ){
@@ -62,7 +71,7 @@ fun Greeting(name: String) {
         Row(modifier = Modifier.padding(24.dp)){
             Column(modifier = Modifier
                 .weight(1f)
-                .padding(bottom = extraPadding)) {
+                .padding(bottom = extraPadding.coerceAtLeast(0.dp))) {
                 Text(text = "Hello")
                 Text(text = "$name!")
             }
